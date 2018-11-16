@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e # Exit if any command fails
+
+# Install the priority units in the order they are listed
+priority_units=`cat priority-units | grep -v '^#'`
+./install-unit $priority_units
+
+# Then install the rest of the units
+
+all_units=`ls -d */ | grep -v '^_' | sed 's/\///'`
+./install-unit $all_units
+

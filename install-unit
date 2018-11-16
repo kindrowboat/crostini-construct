@@ -1,0 +1,69 @@
+#!/bin/sh
+
+set -e # Exit if any command fails
+
+# If multiple args given run this script once for each arg
+test $2 && {
+  for arg in $@
+    do $0 $arg
+  done
+  exit
+}
+
+# ---
+
+function msg {
+  local blue="\e[0;34m"
+  local reset="\e[m\n"
+  printf "$blue$1$reset\n"
+}
+
+unit_name=$1
+unit_dir=$unit_name
+test -d _units/$unit_name && unit_dir=_units/$unit_name
+
+deps_file="$unit_dir/deps"
+guard_file="$unit_dir/verify-install.sh"
+install_file="$unit_dir/install.sh"
+
+test -d $unit_dir || {
+  msg "-* $unit_name not found"
+  exit 1
+}
+
+# Skip if this unit or any deps are blacklisted
+test -f _blacklist && {
+  (grep -v '^#' _blacklist | grep -x -q "^$unit_name\$" -) && {
+    msg "-* skipping blacklisted $unit_name"
+    exit
+  }
+  test -f $deps_file && {
+    for dep_name in `<$deps_file` ; do
+      (grep -v '^#' _blacklist | grep -x -q $dep_name -) && {
+        msg "-* skipping $unit_name due to blacklisted dep $dep_name"
+        exit
+      }
+    done
+  }
+}
+
+# Exit if there's a guard file and the guard detects an install
+test -f $guard_file && sh $guard_file && [ $? -eq 0 ] && {
+  msg "-* $unit_name already installed"
+  exit
+}
+
+# Otherwise install deps (if the deps file contains some)
+test -s $deps_file && $0 `cat $deps_file`
+
+# Then install unit
+msg "-* installing $unit_name"
+sh $install_file
+
+# Exit error if the guard still doesn't pass after install
+test -f $guard_file && (sh $guard_file || {
+  msg "-* $unit_name install script finished but verify-install test failed"
+  exit 1
+})
+
+msg "-* $unit_name installed"
