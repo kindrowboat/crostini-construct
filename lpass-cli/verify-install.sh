@@ -1,0 +1,1 @@
+which lpass > /dev/null

@@ -1,0 +1,1 @@
+which nvim > /dev/null

@@ -1,13 +1,23 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 set -e # Exit if any command fails
 
+function priority_units {
+  cat priority-units | grep -v '^#'
+}
+
+function all_units {
+  ls -d */ | grep -v '^_' | sed 's/\///'
+} 2> /dev/null
+
 # Install the priority units in the order they are listed
-priority_units=`cat priority-units | grep -v '^#'`
-./install-unit $priority_units
+if priority_units; then
+  ./install-unit $(priority_units)
+fi
 
 # Then install the rest of the units
-
-all_units=`ls -d */ | grep -v '^_' | sed 's/\///'`
-./install-unit $all_units
-
+if [ -n "$(all_units)" ]; then
+  ./install-unit $(all_units)
+else
+  echo 'No units to install. Try creating one with "./create-unit UNIT_NAME"'
+fi
