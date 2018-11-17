@@ -1,0 +1,1 @@
+which fasd > /dev/null

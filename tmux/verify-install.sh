@@ -1,0 +1,1 @@
+which tmux > /dev/null
