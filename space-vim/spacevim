@@ -12,7 +12,7 @@ let g:spacevim_plug_home = '~/.vim/plugged'
 
 " Enable the existing layers in space-vim
 let g:spacevim_layers = [
-      \ 'fzf', 'better-defaults', 'which-key', 'file-manager'
+      \ 'fzf', 'better-defaults', 'which-key', 'file-manager', 'markdown', 'deoplete'
       \ ]
 
 " If you want to have more control over the layer, try using Layer command.
@@ -25,6 +25,9 @@ function! UserInit()
 
   " Add plugin via Plug command.
   Plug 'junegunn/seoul256.vim'
+  Plug 'mattn/vim-metarw-gdrive'
+  Plug 'kana/vim-metarw'
+  Plug 'mattn/webapi-vim'
 
 endfunction
 
@@ -48,6 +51,21 @@ function! UserConfig()
 
   " If your terminal(-emulator) supports true colors, uncomment the line below
   " call s:enable_termgui()
-  
+
   set mouse=a
+  nnoremap "*p :r !croshclip -paste<CR>
+  vnoremap "*y :w !croshclip -copy<CR><CR>
+
+  nnoremap "+p :r !croshclip -paste<CR>
+  vnoremap "+y :w !croshclip -copy<CR><CR>
+
+  set linebreak
+  map <leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
+  au FocusLost * silent! update
+  set nohidden
+  set autowriteall
+
+  hi SpellBad ctermbg=52
+  hi SpellCap ctermbg=25
+
 endfunction
