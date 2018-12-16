@@ -52,20 +52,62 @@ function! UserConfig()
   " If your terminal(-emulator) supports true colors, uncomment the line below
   " call s:enable_termgui()
 
+  " enable mouse mode
   set mouse=a
-  nnoremap "*p :r !croshclip -paste<CR>
-  vnoremap "*y :w !croshclip -copy<CR><CR>
 
-  nnoremap "+p :r !croshclip -paste<CR>
-  vnoremap "+y :w !croshclip -copy<CR><CR>
-
+  " when wrapping in enabled, wrap at words
   set linebreak
-  map <leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
+
+  map <leader>q :call CloseBufferWithoutClosingWindow()<CR>
+
+  " write file whenever loosing focus
   au FocusLost * silent! update
   set nohidden
   set autowriteall
 
+  " make misspelled words legible in spell mode
   hi SpellBad ctermbg=52
   hi SpellCap ctermbg=25
 
+  " unmap any <Leader> mappings in terminal mode
+  " so that there isn't a delay when pressing Space
+  tunmap <Leader>wj
+  tunmap <Leader>wk
+  tunmap <Leader>wh
+  tunmap <Leader>wl
+
+  " escape leaves insert mode when in terminal
+  tnoremap <Esc> <C-\><C-n>
+
+  " disable line numbers in terminal
+  " this fixes an issue where the cursor jumps when leaving insert mode
+  au TermOpen * setlocal nonumber norelativenumber
+
+  " allow yanking to clipboard if using crosh window
+  nnoremap <Leader>cr :call ToggleCroshClip()<CR>
+
+
+endfunction
+
+let g:use_crosh_clip = 0
+function! ToggleCroshClip()
+  if g:use_crosh_clip
+    exec 'nunmap "*p'
+    exec 'vunmap "*y'
+    exec 'nunmap "+p'
+    exec 'vunmap "+y'
+    let g:use_crosh_clip = 0
+    echo 'croshclip disabled'
+  else
+    exec 'nnoremap "*p :r !croshclip -paste<CR>'
+    exec 'vnoremap "*y :w !croshclip -copy<CR><CR>'
+    exec 'nnoremap "+p :r !croshclip -paste<CR>'
+    exec 'vnoremap "+y :w !croshclip -copy<CR><CR>'
+    let g:use_crosh_clip = 1
+    echo 'croshclip enabled'
+  endif
+endfunction
+
+function! CloseBufferWithoutClosingWindow()
+  exec ':bp<bar>sp<bar>bn<bar>bd<CR>'
 endfunction
